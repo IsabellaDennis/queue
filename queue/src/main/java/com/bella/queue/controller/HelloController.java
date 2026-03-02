@@ -1,8 +1,11 @@
 package com.bella.queue.controller;
 
+import java.util.Map;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
+
 import com.bella.queue.model.Token;
 import com.bella.queue.service.QueueService;
 
@@ -23,6 +26,30 @@ public class HelloController {
     @GetMapping("/serve")
     public Token serveNext() {
         return queueService.serveNext();
+    }
+
+    // Complete token
+    @GetMapping("/complete/{tokenNumber}")
+    public Token completeToken(@PathVariable String tokenNumber) {
+        return queueService.completeToken(tokenNumber);
+    }
+
+    // Get summary
+    @GetMapping("/summary")
+    public Map<String, Long> getSummary() {
+        return queueService.getSummary();
+    }
+
+    // Get currently serving tokens
+    @GetMapping("/serving")
+    public List<Token> getCurrentlyServing() {
+        return queueService.getCurrentlyServing();
+    }
+
+    // Get average waiting time
+    @GetMapping("/average-waiting-time")
+    public double getAverageWaitingTime() {
+        return queueService.getAverageWaitingTimeSeconds();
     }
 
     // View all tokens
