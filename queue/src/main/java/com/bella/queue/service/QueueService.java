@@ -22,28 +22,24 @@ public class QueueService {
 
     private int counter = 1;
 
-    // ---------------------------
-    // Generate New Token
-    // ---------------------------
+    // Generate Token
     public Token generateToken() {
 
         String tokenNumber = "T" + counter++;
         LocalDateTime now = LocalDateTime.now();
 
         jdbcTemplate.update(
-                "INSERT INTO token (token_number, status, created_time) VALUES (?, ?, ?)",
+                "INSERT INTO TOKEN (TOKEN_NUMBER, STATUS, CREATED_TIME) VALUES (?, ?, ?)",
                 tokenNumber, TokenStatus.WAITING.name(), now);
 
         return new Token(tokenNumber, TokenStatus.WAITING);
     }
 
-    // ---------------------------
-    // Serve Next Token
-    // ---------------------------
+    // Serve Next
     public Token serveNext() {
 
         Long servingCount = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM token WHERE status='SERVING'",
+                "SELECT COUNT(*) FROM TOKEN WHERE STATUS='SERVING'",
                 Long.class);
 
         if (servingCount != null && servingCount >= maxCounters) {
@@ -52,101 +48,92 @@ public class QueueService {
 
         List<Map<String, Object>> waiting =
                 jdbcTemplate.queryForList(
-                        "SELECT * FROM token WHERE status='WAITING' ORDER BY id LIMIT 1");
+                        "SELECT * FROM TOKEN WHERE STATUS='WAITING' ORDER BY ID LIMIT 1");
 
-        if (waiting.isEmpty()) return null;
+        if (waiting.isEmpty()) {
+            throw new RuntimeException("No waiting tokens.");
+        }
 
         Map<String, Object> row = waiting.get(0);
         String tokenNumber = (String) row.get("TOKEN_NUMBER");
 
         jdbcTemplate.update(
-                "UPDATE token SET status='SERVING', served_time=? WHERE token_number=?",
+                "UPDATE TOKEN SET STATUS='SERVING', SERVED_TIME=? WHERE TOKEN_NUMBER=?",
                 LocalDateTime.now(), tokenNumber);
 
         return new Token(tokenNumber, TokenStatus.SERVING);
     }
 
-    // ---------------------------
-    // Complete Token + Auto Serve Next
-    // ---------------------------
+    // Complete
     public void completeToken(String tokenNumber) {
 
         jdbcTemplate.update(
-                "UPDATE token SET status='COMPLETED' WHERE token_number=?",
+                "UPDATE TOKEN SET STATUS='COMPLETED' WHERE TOKEN_NUMBER=?",
                 tokenNumber);
 
-        // 🚦 Auto serve next waiting token
         serveNext();
     }
 
-    // ---------------------------
-    // Get Summary
-    // ---------------------------
+    // Reset Queue
+    public void resetQueue() {
+        jdbcTemplate.update("DELETE FROM TOKEN");
+        counter = 1;
+    }
+
+    // Summary
     public Map<String, Long> getSummary() {
 
         Map<String, Long> summary = new HashMap<>();
 
         summary.put("total",
-                jdbcTemplate.queryForObject("SELECT COUNT(*) FROM token", Long.class));
+                jdbcTemplate.queryForObject("SELECT COUNT(*) FROM TOKEN", Long.class));
 
         summary.put("waiting",
                 jdbcTemplate.queryForObject(
-                        "SELECT COUNT(*) FROM token WHERE status='WAITING'", Long.class));
+                        "SELECT COUNT(*) FROM TOKEN WHERE STATUS='WAITING'", Long.class));
 
         summary.put("serving",
                 jdbcTemplate.queryForObject(
-                        "SELECT COUNT(*) FROM token WHERE status='SERVING'", Long.class));
+                        "SELECT COUNT(*) FROM TOKEN WHERE STATUS='SERVING'", Long.class));
 
         summary.put("completed",
                 jdbcTemplate.queryForObject(
-                        "SELECT COUNT(*) FROM token WHERE status='COMPLETED'", Long.class));
+                        "SELECT COUNT(*) FROM TOKEN WHERE STATUS='COMPLETED'", Long.class));
 
         return summary;
     }
 
-    // ---------------------------
-    // Get All Tokens
-    // ---------------------------
     public List<Token> getAllTokens() {
 
         return jdbcTemplate.query(
-                "SELECT * FROM token ORDER BY id",
+                "SELECT * FROM TOKEN ORDER BY ID",
                 (rs, rowNum) -> {
                     Token token = new Token(
-                            rs.getString("token_number"),
-                            TokenStatus.valueOf(rs.getString("status")));
-                    token.setServedTime(rs.getTimestamp("served_time") != null
-                            ? rs.getTimestamp("served_time").toLocalDateTime()
-                            : null);
+                            rs.getString("TOKEN_NUMBER"),
+                            TokenStatus.valueOf(rs.getString("STATUS")));
                     return token;
                 });
     }
 
-    // ---------------------------
-    // Get Currently Serving Tokens
-    // ---------------------------
     public List<Token> getCurrentlyServing() {
 
         return jdbcTemplate.query(
-                "SELECT * FROM token WHERE status='SERVING'",
+                "SELECT * FROM TOKEN WHERE STATUS='SERVING'",
                 (rs, rowNum) ->
                         new Token(
-                                rs.getString("token_number"),
-                                TokenStatus.valueOf(rs.getString("status"))
+                                rs.getString("TOKEN_NUMBER"),
+                                TokenStatus.valueOf(rs.getString("STATUS"))
                         )
         );
     }
 
-    // ---------------------------
-    // Average Waiting Time (Seconds)
-    // ---------------------------
     public Double getAverageWaitingTimeSeconds() {
 
         Double avg = jdbcTemplate.queryForObject(
                 """
-                SELECT AVG(DATEDIFF('SECOND', created_time, served_time))
-                FROM token
-                WHERE served_time IS NOT NULL
+                SELECT AVG(DATEDIFF('SECOND', CREATED_TIME, SERVED_TIME))
+                FROM TOKEN
+                WHERE SERVED_TIME IS NOT NULL
                 """,
                 Double.class
         );

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Login | Digital Queue System</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .login-card {
+            background: #ffffff;
+            width: 420px;
+            padding: 50px 45px;
+            border-radius: 20px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);
+            text-align: center;
+            animation: fadeIn 0.7s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            margin-bottom: 35px;
+            font-size: 28px;
+            color: #2c3e50;
+            letter-spacing: 1px;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 30px;
+            width: 100%;
+        }
+
+        input {
+            width: 100%;
+            padding: 16px;
+            border-radius: 14px;
+            border: 3px solid #cac5e3;   /* Thick Border */
+            font-size: 15px;
+            outline: none;
+            transition: 0.3s;
+            box-sizing: border-box;      /* Important for center alignment */
+        }
+
+        input:focus {
+            border: 3px solid #667eea;
+            box-shadow: 0 0 10px rgba(102,126,234,0.4);
+        }
+
+        label {
+            position: absolute;
+            left: 18px;
+            top: 17px;
+            color: #888;
+            font-size: 17px;
+            pointer-events: none;
+            transition: 0.3s;
+            background: white;
+            padding: 0 6px;
+        }
+
+        input:focus + label,
+        input:not(:placeholder-shown) + label {
+            top: -10px;
+            font-size: 12px;
+            color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .footer {
+            margin-top: 25px;
+            font-size: 14px;
+            color: #666;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="login-card">
+    <h2>🔐 Admin Login</h2>
+
+    <form method="POST" action="/login">
+
+        <div class="input-group">
+            <input type="text" name="username" required placeholder=" ">
+            <label>Username</label>
+        </div>
+
+        <div class="input-group">
+            <input type="password" name="password" required placeholder=" ">
+            <label>Password</label>
+        </div>
+
+        <button type="submit">Login</button>
+
+    </form>
+
+    <div class="footer">
+        Digital Queue Management System<br>
+        © 2026
+    </div>
+</div>
+
+</body>
+</html>

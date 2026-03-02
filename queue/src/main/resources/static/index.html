@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Digital Queue Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body{
+    margin:0;
+    font-family:'Segoe UI',sans-serif;
+    background:linear-gradient(135deg,#667eea,#764ba2);
+}
+
+/* NAVBAR */
+.navbar{
+    height:75px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    color:white;
+    font-size:28px;
+    font-weight:600;
+}
+
+.logout-btn{
+    position:absolute;
+    right:30px;
+    background:#ff4d4d;
+    border:none;
+    padding:10px 20px;
+    border-radius:8px;
+    color:white;
+    font-weight:600;
+    cursor:pointer;
+}
+
+/* LAYOUT */
+.layout{
+    display:flex;
+    height:calc(100vh - 75px);
+}
+
+/* SIDEBAR */
+.sidebar{
+    width:240px;
+    background:rgba(255,255,255,0.1);
+    backdrop-filter:blur(15px);
+    padding-top:40px;
+    color:white;
+}
+
+.sidebar h3{
+    text-align:center;
+    margin-bottom:40px;
+}
+
+.menu-item{
+    padding:15px 30px;
+    cursor:pointer;
+    transition:0.3s;
+    border-left:4px solid transparent;
+}
+
+.menu-item:hover{
+    background:rgba(255,255,255,0.1);
+}
+
+.menu-item.active{
+    background:rgba(255,255,255,0.15);
+    border-left:4px solid white;
+}
+
+/* MAIN */
+.main{
+    flex:1;
+    padding:40px;
+    overflow-y:auto;
+}
+
+.card{
+    background:white;
+    border-radius:20px;
+    padding:30px;
+    box-shadow:0 15px 40px rgba(0,0,0,0.1);
+    margin-bottom:30px;
+}
+
+/* STATS */
+.stats-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:25px;
+}
+
+.stat-card{
+    text-align:center;
+    padding:25px;
+    border-radius:18px;
+    background:linear-gradient(135deg,#667eea,#764ba2);
+    color:white;
+}
+
+.stat-card h3{
+    margin:0;
+    font-size:30px;
+}
+
+/* ACTIONS */
+.actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:15px;
+    align-items:center;
+}
+
+button{
+    padding:12px 22px;
+    border:none;
+    border-radius:10px;
+    font-weight:600;
+    cursor:pointer;
+}
+
+.generate{background:#28a745;color:white;}
+.serve{background:#007bff;color:white;}
+.complete{background:#ff4d4d;color:white;}
+.reset{background:#6c757d;color:white;}
+
+input,select{
+    padding:10px;
+    border-radius:8px;
+    border:1px solid #ccc;
+}
+
+.serving{
+    margin-top:20px;
+    font-size:20px;
+    font-weight:600;
+    color:#ff6600;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+}
+
+th,td{
+    padding:12px;
+    text-align:center;
+}
+
+th{
+    background:#667eea;
+    color:white;
+}
+
+tr:nth-child(even){
+    background:#f5f5f5;
+}
+
+canvas{
+    max-width:400px;
+    margin:20px auto;
+    display:block;
+}
+</style>
+</head>
+
+<body>
+
+<div class="navbar">
+    🚦 Digital Queue Dashboard
+    <button class="logout-btn" onclick="logout()">Logout</button>
+</div>
+
+<div class="layout">
+
+    <div class="sidebar">
+        <h3>Admin Panel</h3>
+        <div class="menu-item active" onclick="showSection('dashboard',this)">Dashboard</div>
+        <div class="menu-item" onclick="showSection('tokens',this)">Tokens</div>
+        <div class="menu-item" onclick="showSection('reports',this)">Reports</div>
+    </div>
+
+    <div class="main">
+
+        <!-- DASHBOARD -->
+        <div id="dashboardSection">
+
+            <div class="card stats-grid">
+                <div class="stat-card"><h3 id="total">0</h3><p>Total</p></div>
+                <div class="stat-card"><h3 id="waiting">0</h3><p>Waiting</p></div>
+                <div class="stat-card"><h3 id="serving">0</h3><p>Serving</p></div>
+                <div class="stat-card"><h3 id="completed">0</h3><p>Completed</p></div>
+            </div>
+
+            <div class="card">
+                <div class="actions">
+                    <button class="generate" onclick="generateToken()">Generate Token</button>
+                    <button class="serve" onclick="serveNext()">Serve Next</button>
+                    <button class="reset" onclick="resetQueue()">Reset</button>
+
+                    <input type="text" id="completeToken" placeholder="Enter Token">
+                    <button class="complete" onclick="completeToken()">Complete</button>
+                </div>
+
+                <div class="serving" id="currentlyServing"></div>
+            </div>
+
+        </div>
+
+        <!-- TOKENS -->
+        <div id="tokensSection" style="display:none;">
+            <div class="card">
+                <h2>Token History</h2>
+
+                <div class="actions">
+                    <input type="text" id="searchInput" placeholder="Search Token">
+                    <select id="statusFilter">
+                        <option value="">All Status</option>
+                        <option value="WAITING">WAITING</option>
+                        <option value="SERVING">SERVING</option>
+                        <option value="COMPLETED">COMPLETED</option>
+                    </select>
+                </div>
+
+                <div id="history"></div>
+            </div>
+        </div>
+
+        <!-- REPORTS -->
+        <div id="reportsSection" style="display:none;">
+            <div class="card">
+                <h2>Reports</h2>
+                <canvas id="pieChart"></canvas>
+                <canvas id="barChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+
+let allTokens=[];
+let pieChart,barChart;
+
+function apiFetch(url){
+    return fetch(url,{credentials:'include'});
+}
+
+function showSection(section,el){
+    document.getElementById("dashboardSection").style.display="none";
+    document.getElementById("tokensSection").style.display="none";
+    document.getElementById("reportsSection").style.display="none";
+
+    document.getElementById(section+"Section").style.display="block";
+
+    document.querySelectorAll(".menu-item").forEach(i=>i.classList.remove("active"));
+    el.classList.add("active");
+
+    if(section==="tokens") loadHistory();
+    if(section==="reports") loadCharts();
+}
+
+async function generateToken(){await apiFetch('/queue/generate');refresh();}
+async function serveNext(){await apiFetch('/queue/serve');refresh();}
+async function completeToken(){
+    let token=document.getElementById("completeToken").value;
+    if(!token) return alert("Enter token");
+    await apiFetch('/queue/complete/'+token);
+    document.getElementById("completeToken").value="";
+    refresh();
+}
+async function resetQueue(){await apiFetch('/queue/reset');refresh();}
+async function logout(){await fetch('/logout',{credentials:'include'});window.location="/login";}
+
+async function loadSummary(){
+    const res=await apiFetch('/queue/summary');
+    const data=await res.json();
+    total.innerText=data.total;
+    waiting.innerText=data.waiting;
+    serving.innerText=data.serving;
+    completed.innerText=data.completed;
+}
+
+async function loadServing(){
+    const res=await apiFetch('/queue/serving');
+    const data=await res.json();
+    let text="Currently Serving: ";
+    data.length?data.forEach(t=>text+=t.tokenNumber+" "):text+="None";
+    currentlyServing.innerText=text;
+}
+
+async function loadHistory(){
+    const res=await apiFetch('/queue/all');
+    allTokens=await res.json();
+    renderTable();
+}
+
+function renderTable(){
+    let search=document.getElementById("searchInput").value.toUpperCase();
+    let status=document.getElementById("statusFilter").value;
+    let historyDiv=document.getElementById("history");
+
+    let filtered=allTokens.filter(t=>{
+        return t.tokenNumber.toUpperCase().includes(search) &&
+               (status===""||t.status===status);
+    });
+
+    let table="<table><tr><th>Token</th><th>Status</th></tr>";
+    filtered.forEach(t=>{
+        table+=`<tr><td>${t.tokenNumber}</td><td>${t.status}</td></tr>`;
+    });
+    table+="</table>";
+    historyDiv.innerHTML=table;
+}
+
+document.getElementById("searchInput").addEventListener("keyup",renderTable);
+document.getElementById("statusFilter").addEventListener("change",renderTable);
+
+async function loadCharts(){
+    const res=await apiFetch('/queue/summary');
+    const data=await res.json();
+
+    if(pieChart) pieChart.destroy();
+    if(barChart) barChart.destroy();
+
+    pieChart=new Chart(document.getElementById("pieChart"),{
+        type:'pie',
+        data:{
+            labels:['Waiting','Serving','Completed'],
+            datasets:[{
+                data:[data.waiting,data.serving,data.completed],
+                backgroundColor:['#fbbf24','#007bff','#28a745']
+            }]
+        }
+    });
+
+    barChart=new Chart(document.getElementById("barChart"),{
+        type:'bar',
+        data:{
+            labels:['Waiting','Serving','Completed'],
+            datasets:[{
+                data:[data.waiting,data.serving,data.completed],
+                backgroundColor:'#667eea'
+            }]
+        }
+    });
+}
+
+function refresh(){
+    loadSummary();
+    loadServing();
+}
+
+setInterval(refresh,3000);
+refresh();
+
+</script>
+
+</body>
+</html>
