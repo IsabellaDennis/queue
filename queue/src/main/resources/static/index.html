@@ -1,112 +1,148 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Digital Queue Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<title>Digital Queue Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
+
 body{
     margin:0;
     font-family:'Segoe UI',sans-serif;
-    background:linear-gradient(135deg,#667eea,#764ba2);
+    background:linear-gradient(135deg,#eef2ff,#f4f6fb);
 }
 
-/* NAVBAR */
-.navbar{
-    height:75px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    position:relative;
-    color:white;
-    font-size:28px;
-    font-weight:600;
-}
-
-.logout-btn{
-    position:absolute;
-    right:30px;
-    background:#ff4d4d;
-    border:none;
-    padding:10px 20px;
-    border-radius:8px;
-    color:white;
-    font-weight:600;
-    cursor:pointer;
-}
-
-/* LAYOUT */
 .layout{
     display:flex;
-    height:calc(100vh - 75px);
+    height:100vh;
 }
 
-/* SIDEBAR */
+/* ================= SIDEBAR ================= */
 .sidebar{
-    width:240px;
-    background:rgba(255,255,255,0.1);
-    backdrop-filter:blur(15px);
-    padding-top:40px;
+    width:250px;
+    background:linear-gradient(180deg,#5a67d8,#6b46c1);
     color:white;
+    display:flex;
+    flex-direction:column;
+    padding-top:30px;
 }
 
-.sidebar h3{
-    text-align:center;
-    margin-bottom:40px;
+.sidebar-header{
+    padding:0 30px 25px 30px;
+    font-size:24px;
+    font-weight:700;
+    letter-spacing:1px;
 }
 
 .menu-item{
-    padding:15px 30px;
+    padding:14px 30px;
     cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    font-weight:500;
     transition:0.3s;
-    border-left:4px solid transparent;
 }
 
 .menu-item:hover{
-    background:rgba(255,255,255,0.1);
+    background:rgba(255,255,255,0.15);
 }
 
 .menu-item.active{
-    background:rgba(255,255,255,0.15);
-    border-left:4px solid white;
+    background:white;
+    color:#5a67d8;
+    border-radius:10px;
+    margin:0 15px;
+    font-weight:600;
 }
 
-/* MAIN */
+/* ================= MAIN ================= */
 .main{
     flex:1;
-    padding:40px;
+    padding:50px;
     overflow-y:auto;
 }
 
+/* ================= HEADER ================= */
+.page-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:40px;
+}
+
+.main-title{
+    font-size:38px;
+    font-weight:700;
+    color:#1f2937;   /* dark clean gray */
+    letter-spacing:1px;
+    margin-bottom:40px;
+}
+
+.logout-btn{
+    background:#ff4d4d;
+    color:white;
+    padding:10px 20px;
+    border:none;
+    border-radius:8px;
+    font-weight:600;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.logout-btn:hover{
+    background:#e63946;
+}
+
+/* ================= CARD ================= */
 .card{
     background:white;
     border-radius:20px;
-    padding:30px;
-    box-shadow:0 15px 40px rgba(0,0,0,0.1);
-    margin-bottom:30px;
+    padding:35px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.08);
+    margin-bottom:35px;
+    text-align:center;
 }
 
-/* STATS */
+/* ================= STATS ================= */
 .stats-grid{
     display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
     gap:25px;
 }
 
 .stat-card{
-    text-align:center;
+    border-radius:16px;
     padding:25px;
-    border-radius:18px;
-    background:linear-gradient(135deg,#667eea,#764ba2);
+    box-shadow:0 8px 20px rgba(0,0,0,0.08);
     color:white;
 }
 
-.stat-card h3{
-    margin:0;
-    font-size:30px;
+.stat-card span{
+    font-size:14px;
+    opacity:0.9;
 }
 
-/* ACTIONS */
+.stat-card h3{
+    margin-top:10px;
+    font-size:32px;
+}
+
+/* Different color for each */
+.stats-grid .stat-card:nth-child(1){
+    background:linear-gradient(135deg,#6366f1,#8b5cf6);
+}
+.stats-grid .stat-card:nth-child(2){
+    background:linear-gradient(135deg,#0ea5e9,#38bdf8);
+}
+.stats-grid .stat-card:nth-child(3){
+    background:linear-gradient(135deg,#f59e0b,#fbbf24);
+}
+.stats-grid .stat-card:nth-child(4){
+    background:linear-gradient(135deg,#10b981,#34d399);
+}
+
+/* ================= ACTIONS ================= */
 .actions{
     display:flex;
     flex-wrap:wrap;
@@ -115,9 +151,9 @@ body{
 }
 
 button{
-    padding:12px 22px;
+    padding:10px 20px;
     border:none;
-    border-radius:10px;
+    border-radius:8px;
     font-weight:600;
     cursor:pointer;
 }
@@ -134,12 +170,37 @@ input,select{
 }
 
 .serving{
-    margin-top:20px;
-    font-size:20px;
-    font-weight:600;
-    color:#ff6600;
+    margin:60px auto;
+    width:65%;
+    max-width:850px;
+    padding:70px 40px;
+
+    background:#f3f4f6;              /* soft light grey */
+    border-radius:24px;
+
+    text-align:center;
 }
 
+.serving-label{
+    font-size:22px;                  /* bigger title */
+    font-weight:600;
+    letter-spacing:6px;
+    color:#4b5563;                   /* clean dark grey */
+    margin-bottom:35px;
+    margin-top:30px;
+}
+
+.serving-token{
+    font-size:72px;                  /* smaller, balanced */
+    font-weight:700;
+    color:#e43c3c;                   /* softer purple */
+    letter-spacing:14px;
+    text-shadow:
+        0 4px 8px rgba(0,0,0,0.25),
+        0 8px 20px rgba(99,102,241,0.35),
+        0 0 25px rgba(255,255,255,0.6);
+}
+/* ================= TABLE ================= */
 table{
     width:100%;
     border-collapse:collapse;
@@ -152,7 +213,7 @@ th,td{
 }
 
 th{
-    background:#667eea;
+    background:#5a67d8;
     color:white;
 }
 
@@ -165,35 +226,67 @@ canvas{
     margin:20px auto;
     display:block;
 }
+
 </style>
 </head>
 
 <body>
 
-<div class="navbar">
-    🚦 Digital Queue Dashboard
-    <button class="logout-btn" onclick="logout()">Logout</button>
-</div>
-
 <div class="layout">
 
+    <!-- SIDEBAR -->
     <div class="sidebar">
-        <h3>Admin Panel</h3>
-        <div class="menu-item active" onclick="showSection('dashboard',this)">Dashboard</div>
-        <div class="menu-item" onclick="showSection('tokens',this)">Tokens</div>
-        <div class="menu-item" onclick="showSection('reports',this)">Reports</div>
+        <div class="sidebar-header">Admin Panel</div>
+
+        <div class="menu-item active" onclick="showSection('dashboard',this)">
+            📊 Dashboard
+        </div>
+
+        <div class="menu-item" onclick="showSection('tokens',this)">
+            🎟 Tokens
+        </div>
+
+        <div class="menu-item" onclick="showSection('reports',this)">
+            📈 Reports
+        </div>
     </div>
 
+    <!-- MAIN -->
     <div class="main">
+
+        <!-- HEADER -->
+        <div class="page-header">
+            <h1 class="page-title">🚦 Digital Queue Dashboard</h1>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
 
         <!-- DASHBOARD -->
         <div id="dashboardSection">
 
-            <div class="card stats-grid">
-                <div class="stat-card"><h3 id="total">0</h3><p>Total</p></div>
-                <div class="stat-card"><h3 id="waiting">0</h3><p>Waiting</p></div>
-                <div class="stat-card"><h3 id="serving">0</h3><p>Serving</p></div>
-                <div class="stat-card"><h3 id="completed">0</h3><p>Completed</p></div>
+            <div class="card">
+                <div class="stats-grid">
+
+                    <div class="stat-card">
+                        <span>Total</span>
+                        <h3 id="total">0</h3>
+                    </div>
+
+                    <div class="stat-card">
+                        <span>Waiting</span>
+                        <h3 id="waiting">0</h3>
+                    </div>
+
+                    <div class="stat-card">
+                        <span>Serving</span>
+                        <h3 id="serving">0</h3>
+                    </div>
+
+                    <div class="stat-card">
+                        <span>Completed</span>
+                        <h3 id="completed">0</h3>
+                    </div>
+
+                </div>
             </div>
 
             <div class="card">
@@ -206,7 +299,8 @@ canvas{
                     <button class="complete" onclick="completeToken()">Complete</button>
                 </div>
 
-                <div class="serving" id="currentlyServing"></div>
+                <div class="serving-label">CURRENTLY SERVING</div>
+                <div class="serving-token" id="currentlyServing">--</div>
             </div>
 
         </div>
@@ -240,6 +334,7 @@ canvas{
         </div>
 
     </div>
+
 </div>
 
 <script>
@@ -287,11 +382,16 @@ async function loadSummary(){
 }
 
 async function loadServing(){
-    const res=await apiFetch('/queue/serving');
-    const data=await res.json();
-    let text="Currently Serving: ";
-    data.length?data.forEach(t=>text+=t.tokenNumber+" "):text+="None";
-    currentlyServing.innerText=text;
+    const res = await apiFetch('/queue/serving');
+    const data = await res.json();
+
+    const tokenElement = document.getElementById("currentlyServing");
+
+    if(data && data.length > 0){
+        tokenElement.innerText = data.map(t => t.tokenNumber).join(" ");
+    } else {
+        tokenElement.innerText = "--";
+    }
 }
 
 async function loadHistory(){
