@@ -7,9 +7,17 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 public class LoginController {
 
+    @GetMapping("/")
+    public String dashboard(HttpSession session) {
+        if (session.getAttribute("user") == null) {
+            return "redirect:/login";
+        }
+        return "forward:/html/index.html";
+    }
+
     @GetMapping("/login")
     public String loginPage() {
-        return "login.html";
+        return "forward:/html/login.html";
     }
 
     @PostMapping("/login")

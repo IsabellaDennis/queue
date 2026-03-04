@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Digital Queue Dashboard</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+
+    <div class="layout">
+
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                Admin Panel
+            </div>
+
+            <div class="menu-item active" onclick="showSection('dashboard',this)">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+                Dashboard
+            </div>
+
+            <div class="menu-item" onclick="showSection('tokens',this)">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path
+                        d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v2z">
+                    </path>
+                </svg>
+                Token History
+            </div>
+
+            <div class="menu-item" onclick="showSection('counters',this)">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                </svg>
+                Service Desks
+            </div>
+
+        </div>
+
+        <!-- MAIN -->
+        <div class="main">
+
+            <!-- HEADER -->
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Digital Queue Dashboard</h1>
+                    <div class="page-subtitle">Manage tokens, metrics, and customer flow</div>
+                </div>
+                <button class="logout-btn" onclick="logout()">
+                    Sign Out
+                </button>
+            </div>
+
+            <!-- DASHBOARD -->
+            <div id="dashboardSection">
+
+                <div class="stats-grid" style="margin-bottom: 32px;">
+                    <div class="stat-card">
+                        <span>Total Tokens</span>
+                        <h3 id="total">0</h3>
+                    </div>
+                    <div class="stat-card">
+                        <span>In Queue</span>
+                        <h3 id="waiting">0</h3>
+                    </div>
+                    <div class="stat-card">
+                        <span>Currently Serving</span>
+                        <h3 id="serving">0</h3>
+                    </div>
+                    <div class="stat-card">
+                        <span>Completed</span>
+                        <h3 id="completed">0</h3>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Queue Controls</h2>
+                    </div>
+
+                    <div class="controls-grid">
+                        <button class="control-btn primary-gradient" onclick="generateToken()">
+                            <span class="icon">🎟️</span>
+                            <div class="btn-text">
+                                <strong>Generate Token</strong>
+                                <span>Add to Queue</span>
+                            </div>
+                        </button>
+
+                        <button class="control-btn success-gradient" onclick="serveNext()">
+                            <span class="icon">🧑‍⚕️</span>
+                            <div class="btn-text">
+                                <strong>Serve Next</strong>
+                                <span>Call from Queue</span>
+                            </div>
+                        </button>
+
+                        <button class="control-btn neutral-style" onclick="resetQueue()">
+                            <span class="icon">🔄</span>
+                            <div class="btn-text">
+                                <strong>Reset System</strong>
+                                <span>Clear all data</span>
+                            </div>
+                        </button>
+                    </div>
+
+                    <!-- Complete Token Section -->
+                    <div class="complete-wrapper">
+                        <div class="floating-input-group">
+                            <input type="text" id="completeToken" required placeholder=" ">
+                            <label>Enter Token to Complete (e.g. T1)</label>
+                        </div>
+                        <button class="control-btn execute-btn" onclick="completeToken()">
+                            <strong>Mark Complete</strong>
+                        </button>
+                    </div>
+
+                    <div class="serving-section">
+                        <div class="serving-label">Currently Serving</div>
+                        <div class="serving-token" id="currentlyServing">--</div>
+                    </div>
+                </div>
+
+            </div> <!-- Closes dashboardSection -->
+
+            <!-- TOKENS -->
+            <div id="tokensSection" style="display:none;">
+                <div class="card">
+                    <div class="controls-header">
+                        <h2>Token Registry</h2>
+                        <div class="filter-bar">
+                            <div class="filter-search-wrap">
+                                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                                    <circle cx="11" cy="11" r="8" />
+                                    <path d="M21 21l-4.35-4.35" />
+                                </svg>
+                                <input type="text" id="searchInput" placeholder="Search tokens...">
+                            </div>
+                            <select id="statusFilter" class="filter-select">
+                                <option value="">All Statuses</option>
+                                <option value="WAITING">Waiting</option>
+                                <option value="SERVING">Serving</option>
+                                <option value="COMPLETED">Completed</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <div id="history"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COUNTERS (Service Desks) -->
+            <div id="countersSection" style="display:none;">
+                <div class="card">
+                    <div class="controls-header">
+                        <h2>Manage Service Desks</h2>
+                        <div style="display:flex; gap:10px;">
+                            <button class="btn-primary" style="padding: 10px 20px;" onclick="addNewDesk()">+ Add New
+                                Counter</button>
+                            <button onclick="resetCounters()"
+                                style="padding: 10px 20px; background:#fff; color:#ef4444; border: 2px solid #fee2e2; border-radius:10px; font-size:14px; font-weight:600; font-family:'Inter',sans-serif; cursor:pointer; transition: all 0.2s;"
+                                onmouseover="this.style.background='#fef2f2'"
+                                onmouseout="this.style.background='#fff'">↺ Reset Counters</button>
+                        </div>
+                    </div>
+
+                    <div class="staff-grid" id="staffGrid">
+                        <div class="staff-card">
+                            <div class="staff-avatar">C1</div>
+                            <div class="staff-info">
+                                <h4>Counter 1</h4>
+                                <span>Serving Token <strong style="color:var(--primary)">T-14</strong></span>
+                            </div>
+                            <span class="status-badge status-SERVING" style="margin-left: auto;">Online</span>
+                        </div>
+
+                        <div class="staff-card">
+                            <div class="staff-avatar" style="background: #10b981;">C2</div>
+                            <div class="staff-info">
+                                <h4>Counter 2</h4>
+                                <span>Waiting for patient</span>
+                            </div>
+                            <span class="status-badge status-COMPLETED" style="margin-left: auto;">Idle</span>
+                        </div>
+
+                        <div class="staff-card">
+                            <div class="staff-avatar" style="background: #f59e0b;">C3</div>
+                            <div class="staff-info">
+                                <h4>Counter 3</h4>
+                                <span>Closed for break</span>
+                            </div>
+                            <span class="status-badge status-WAITING" style="margin-left: auto;">Offline</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/script.js"></script>
+
+</body>
+
+</html>
