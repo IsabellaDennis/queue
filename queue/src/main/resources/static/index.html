@@ -1,465 +1,1209 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<title>Digital Queue Dashboard</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Digital Queue Dashboard</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        /* Enterprise / Professional Light Mode CSS */
+        :root {
+            --primary: #667eea;
+            --primary-dark: #5a67d8;
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 
-<style>
+            /* Backgrounds */
+            --bg-page: #f8fafc;
+            --bg-card: #ffffff;
+            --bg-sidebar: #1e1b4b;
+            /* Deep rich dark sidebar */
 
-body{
-    margin:0;
-    font-family:'Segoe UI',sans-serif;
-    background:linear-gradient(135deg,#eef2ff,#f4f6fb);
-}
+            /* Text */
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --text-inverse: #ffffff;
 
-.layout{
-    display:flex;
-    height:100vh;
-}
+            /* Stats Colors */
+            --stat-1: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            --stat-2: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            --stat-3: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            --stat-4: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
 
-/* ================= SIDEBAR ================= */
-.sidebar{
-    width:250px;
-    background:linear-gradient(180deg,#5a67d8,#6b46c1);
-    color:white;
-    display:flex;
-    flex-direction:column;
-    padding-top:30px;
-}
+            /* UI Elements */
+            --border-light: #e2e8f0;
+            --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+            --shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
 
-.sidebar-header{
-    padding:0 30px 25px 30px;
-    font-size:24px;
-    font-weight:700;
-    letter-spacing:1px;
-}
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            /* Clean, professional body font */
+            background: var(--bg-page);
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
 
-.menu-item{
-    padding:14px 30px;
-    cursor:pointer;
-    display:flex;
-    align-items:center;
-    gap:12px;
-    font-weight:500;
-    transition:0.3s;
-}
+        .layout {
+            display: flex;
+            height: 100vh;
+        }
 
-.menu-item:hover{
-    background:rgba(255,255,255,0.15);
-}
+        /* ================= SIDEBAR ================= */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-sidebar);
+            color: var(--text-inverse);
+            display: flex;
+            flex-direction: column;
+            padding-top: 32px;
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
 
-.menu-item.active{
-    background:white;
-    color:#5a67d8;
-    border-radius:10px;
-    margin:0 15px;
-    font-weight:600;
-}
+        .sidebar-header {
+            padding: 0 32px 40px 32px;
+            font-size: 24px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 24px;
+            text-align: center;
+        }
 
-/* ================= MAIN ================= */
-.main{
-    flex:1;
-    padding:50px;
-    overflow-y:auto;
-}
+        .menu-item {
+            padding: 16px 32px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 15px;
+            font-weight: 500;
+            color: #94a3b8;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
 
-/* ================= HEADER ================= */
-.page-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:40px;
-}
+        .menu-item:hover {
+            color: var(--text-inverse);
+            background: rgba(255, 255, 255, 0.03);
+        }
 
-.main-title{
-    font-size:38px;
-    font-weight:700;
-    color:#1f2937;   /* dark clean gray */
-    letter-spacing:1px;
-    margin-bottom:40px;
-}
+        .menu-item.active {
+            background: rgba(102, 126, 234, 0.1);
+            color: var(--primary);
+            border-left: 4px solid var(--primary);
+            font-weight: 600;
+        }
 
-.logout-btn{
-    background:#ff4d4d;
-    color:white;
-    padding:10px 20px;
-    border:none;
-    border-radius:8px;
-    font-weight:600;
-    cursor:pointer;
-    transition:0.3s;
-}
+        /* ================= MAIN ================= */
+        .main {
+            flex: 1;
+            padding: 40px 48px;
+            overflow-y: auto;
+        }
 
-.logout-btn:hover{
-    background:#e63946;
-}
+        /* ================= HEADER ================= */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
 
-/* ================= CARD ================= */
-.card{
-    background:white;
-    border-radius:20px;
-    padding:35px;
-    box-shadow:0 10px 25px rgba(0,0,0,0.08);
-    margin-bottom:35px;
-    text-align:center;
-}
+        .page-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 36px;
+            font-weight: 800;
+            margin: 0;
+            color: var(--text-main);
+            letter-spacing: -1px;
+        }
 
-/* ================= STATS ================= */
-.stats-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-    gap:25px;
-}
+        .page-subtitle {
+            font-size: 15px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            font-weight: 400;
+        }
 
-.stat-card{
-    border-radius:16px;
-    padding:25px;
-    box-shadow:0 8px 20px rgba(0,0,0,0.08);
-    color:white;
-}
+        .logout-btn {
+            background: #ffffff;
+            color: #ef4444;
+            padding: 10px 24px;
+            border: 1px solid #fee2e2;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-soft);
+        }
 
-.stat-card span{
-    font-size:14px;
-    opacity:0.9;
-}
+        .logout-btn:hover {
+            background: #fef2f2;
+            border-color: #fca5a5;
+            transform: translateY(-1px);
+        }
 
-.stat-card h3{
-    margin-top:10px;
-    font-size:32px;
-}
+        /* ================= CARD ================= */
+        .card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: var(--shadow-card);
+            margin-bottom: 32px;
+            border: 1px solid var(--border-light);
+        }
 
-/* Different color for each */
-.stats-grid .stat-card:nth-child(1){
-    background:linear-gradient(135deg,#6366f1,#8b5cf6);
-}
-.stats-grid .stat-card:nth-child(2){
-    background:linear-gradient(135deg,#0ea5e9,#38bdf8);
-}
-.stats-grid .stat-card:nth-child(3){
-    background:linear-gradient(135deg,#f59e0b,#fbbf24);
-}
-.stats-grid .stat-card:nth-child(4){
-    background:linear-gradient(135deg,#10b981,#34d399);
-}
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
 
-/* ================= ACTIONS ================= */
-.actions{
-    display:flex;
-    flex-wrap:wrap;
-    gap:15px;
-    align-items:center;
-}
+        .card h2 {
+            margin: 0;
+            font-family: 'Outfit', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: -0.5px;
+        }
 
-button{
-    padding:10px 20px;
-    border:none;
-    border-radius:8px;
-    font-weight:600;
-    cursor:pointer;
-}
+        /* ================= STATS ================= */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 24px;
+        }
 
-.generate{background:#28a745;color:white;}
-.serve{background:#007bff;color:white;}
-.complete{background:#ff4d4d;color:white;}
-.reset{background:#6c757d;color:white;}
+        .stat-card {
+            border-radius: 16px;
+            padding: 28px 24px;
+            color: white;
+            box-shadow: var(--shadow-soft);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
 
-input,select{
-    padding:10px;
-    border-radius:8px;
-    border:1px solid #ccc;
-}
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            right: -20px;
+            bottom: -20px;
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
 
-.serving{
-    margin:60px auto;
-    width:65%;
-    max-width:850px;
-    padding:70px 40px;
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+        }
 
-    background:#f3f4f6;              /* soft light grey */
-    border-radius:24px;
+        .stat-card span {
+            font-size: 14px;
+            font-weight: 600;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: block;
+            margin-bottom: 8px;
+        }
 
-    text-align:center;
-}
+        .stat-card h3 {
+            margin: 0;
+            font-family: 'Outfit', sans-serif;
+            font-size: 48px;
+            font-weight: 700;
+            letter-spacing: -1px;
+            line-height: 1;
+        }
 
-.serving-label{
-    font-size:22px;                  /* bigger title */
-    font-weight:600;
-    letter-spacing:6px;
-    color:#4b5563;                   /* clean dark grey */
-    margin-bottom:35px;
-    margin-top:30px;
-}
+        .stats-grid .stat-card:nth-child(1) {
+            background: var(--stat-1);
+        }
 
-.serving-token{
-    font-size:72px;                  /* smaller, balanced */
-    font-weight:700;
-    color:#e43c3c;                   /* softer purple */
-    letter-spacing:14px;
-    text-shadow:
-        0 4px 8px rgba(0,0,0,0.25),
-        0 8px 20px rgba(99,102,241,0.35),
-        0 0 25px rgba(255,255,255,0.6);
-}
-/* ================= TABLE ================= */
-table{
-    width:100%;
-    border-collapse:collapse;
-    margin-top:20px;
-}
+        .stats-grid .stat-card:nth-child(2) {
+            background: var(--stat-2);
+        }
 
-th,td{
-    padding:12px;
-    text-align:center;
-}
+        .stats-grid .stat-card:nth-child(3) {
+            background: var(--stat-3);
+        }
 
-th{
-    background:#5a67d8;
-    color:white;
-}
+        .stats-grid .stat-card:nth-child(4) {
+            background: var(--stat-4);
+        }
 
-tr:nth-child(even){
-    background:#f5f5f5;
-}
+        /* ================= NEW CONTROLS ================= */
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
 
-canvas{
-    max-width:400px;
-    margin:20px auto;
-    display:block;
-}
+        .control-btn {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 16px 20px;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            color: white;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        }
 
-</style>
+        .control-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .control-btn .icon {
+            font-size: 26px;
+            background: rgba(255, 255, 255, 0.2);
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+        }
+
+        .control-btn .btn-text strong {
+            display: block;
+            font-size: 16px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .control-btn .btn-text span {
+            font-size: 13px;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+
+        .primary-gradient {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .success-gradient {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: #0f172a;
+        }
+
+        .success-gradient .icon {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .neutral-style {
+            background: #ffffff;
+            color: #475569;
+            border: 2px solid #e2e8f0;
+            box-shadow: none;
+        }
+
+        .neutral-style:hover {
+            border-color: #cbd5e1;
+            background: #f8fafc;
+        }
+
+        .neutral-style .icon {
+            background: white;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Complete Wrapper with Floating Label strictly matching login.html */
+        .complete-wrapper {
+            display: flex;
+            gap: 20px;
+            background: #ffffff;
+            padding: 24px;
+            border-radius: 18px;
+            border: 2px dashed #cac5e3;
+            align-items: stretch;
+            margin-bottom: 35px;
+        }
+
+        .floating-input-group {
+            position: relative;
+            flex: 1;
+        }
+
+        .floating-input-group input {
+            width: 100%;
+            padding: 16px;
+            border-radius: 14px;
+            border: 3px solid #cac5e3;
+            font-size: 15px;
+            outline: none;
+            transition: 0.3s;
+            box-sizing: border-box;
+            height: 100%;
+            background: transparent;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .floating-input-group input:focus {
+            border: 3px solid #667eea;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.15);
+        }
+
+        .floating-input-group label {
+            position: absolute;
+            left: 18px;
+            top: 17px;
+            color: #888;
+            font-size: 15px;
+            pointer-events: none;
+            transition: 0.3s;
+            background: white;
+            padding: 0 6px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .floating-input-group input:focus+label,
+        .floating-input-group input:not(:placeholder-shown)+label {
+            top: -10px;
+            font-size: 12px;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .execute-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 0 40px;
+            justify-content: center;
+        }
+
+        .execute-btn strong {
+            margin-bottom: 0 !important;
+            font-size: 18px !important;
+        }
+
+        /* ================= SERVING DISPLAY ================= */
+        .serving-section {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(to bottom, #ffffff, #f8fafc);
+            border-radius: 16px;
+            border: 1px solid var(--border-light);
+        }
+
+        .serving-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        .serving-token {
+            font-family: 'Outfit', sans-serif;
+            font-size: 84px;
+            font-weight: 800;
+            color: var(--primary-dark);
+            letter-spacing: -2px;
+            margin: 0;
+            line-height: 1;
+        }
+
+        /* ================= TOKEN CARDS ================= */
+        .token-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            padding: 10px;
+        }
+
+        .token-history-card {
+            background: #ffffff;
+            border: 1px solid var(--border-light);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .token-history-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.08);
+            border-color: #cac5e3;
+        }
+
+        .thc-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px dashed var(--border-light);
+            padding-bottom: 12px;
+        }
+
+        .thc-header h3 {
+            margin: 0;
+            font-size: 24px;
+            font-family: 'Outfit', sans-serif;
+            color: var(--primary-dark);
+        }
+
+        .thc-body {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .time-block {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fafc;
+            padding: 10px 14px;
+            border-radius: 8px;
+        }
+
+        .time-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .time-value {
+            font-size: 14px;
+            color: var(--text-main);
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Status Badges */
+        .status-badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            display: inline-block;
+        }
+
+        .status-WAITING {
+            background: #fef3c7;
+            color: #d97706;
+            border: 1px solid #fde68a;
+        }
+
+        .status-SERVING {
+            background: #dbeafe;
+            color: #2563eb;
+            border: 1px solid #bfdbfe;
+        }
+
+        .status-COMPLETED {
+            background: #d1fae5;
+            color: #059669;
+            border: 1px solid #a7f3d0;
+        }
+
+        /* ================= STAFF AND SETTINGS ================= */
+        .staff-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .staff-card {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            background: #f8fafc;
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            gap: 16px;
+            transition: transform 0.2s;
+        }
+
+        .staff-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-card);
+        }
+
+        .staff-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 18px;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .staff-info h4 {
+            margin: 0;
+            font-size: 16px;
+            color: var(--text-main);
+        }
+
+        .staff-info span {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .settings-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .settings-group h3 {
+            margin: 0 0 16px 0;
+            font-family: 'Outfit', sans-serif;
+            color: var(--primary-dark);
+            font-size: 18px;
+            border-bottom: 2px solid var(--border-light);
+            padding-bottom: 8px;
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background: #f8fafc;
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
+
+        .setting-item strong {
+            display: block;
+            margin-bottom: 4px;
+            color: var(--text-main);
+        }
+
+        .setting-item span {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* Toggle Switch CSS */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 26px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #cbd5e1;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: #10b981;
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(24px);
+        }
+
+        /* ================= CHARTS ================= */
+        .charts-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 32px;
+            margin-top: 24px;
+        }
+
+        .chart-container {
+            flex: 1;
+            min-width: 300px;
+            max-width: 500px;
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border-light);
+        }
+
+        .controls-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        /* ================= FILTER BAR ================= */
+        .filter-bar {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+        }
+
+        .filter-search-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .filter-search-wrap svg {
+            position: absolute;
+            left: 16px;
+            color: var(--text-muted);
+            pointer-events: none;
+            flex-shrink: 0;
+        }
+
+        .filter-search-wrap input {
+            width: 300px;
+            padding: 13px 18px 13px 46px;
+            border: 2px solid var(--border-light);
+            border-radius: 12px;
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            background: #f8fafc;
+            outline: none;
+            transition: all 0.25s ease;
+        }
+
+        .filter-search-wrap input::placeholder {
+            color: #94a3b8;
+        }
+
+        .filter-search-wrap input:focus {
+            border-color: var(--primary);
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.12);
+        }
+
+        .filter-select {
+            padding: 13px 40px 13px 18px;
+            border: 2px solid var(--border-light);
+            border-radius: 12px;
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            background: #f8fafc;
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            min-width: 170px;
+            transition: all 0.25s ease;
+            font-weight: 500;
+        }
+
+        .filter-select:focus {
+            border-color: var(--primary);
+            background-color: #fff;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.12);
+        }
+    </style>
 </head>
 
 <body>
 
-<div class="layout">
+    <div class="layout">
 
-    <!-- SIDEBAR -->
-    <div class="sidebar">
-        <div class="sidebar-header">Admin Panel</div>
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                Admin Panel
+            </div>
 
-        <div class="menu-item active" onclick="showSection('dashboard',this)">
-            📊 Dashboard
+            <div class="menu-item active" onclick="showSection('dashboard',this)">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+                Dashboard
+            </div>
+
+            <div class="menu-item" onclick="showSection('tokens',this)">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path
+                        d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v2z">
+                    </path>
+                </svg>
+                Token History
+            </div>
+
+            <div class="menu-item" onclick="showSection('counters',this)">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                </svg>
+                Service Desks
+            </div>
+
         </div>
 
-        <div class="menu-item" onclick="showSection('tokens',this)">
-            🎟 Tokens
-        </div>
+        <!-- MAIN -->
+        <div class="main">
 
-        <div class="menu-item" onclick="showSection('reports',this)">
-            📈 Reports
-        </div>
-    </div>
+            <!-- HEADER -->
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Digital Queue Dashboard</h1>
+                    <div class="page-subtitle">Manage tokens, metrics, and customer flow</div>
+                </div>
+                <button class="logout-btn" onclick="logout()">
+                    Sign Out
+                </button>
+            </div>
 
-    <!-- MAIN -->
-    <div class="main">
+            <!-- DASHBOARD -->
+            <div id="dashboardSection">
 
-        <!-- HEADER -->
-        <div class="page-header">
-            <h1 class="page-title">🚦 Digital Queue Dashboard</h1>
-            <button class="logout-btn" onclick="logout()">Logout</button>
-        </div>
-
-        <!-- DASHBOARD -->
-        <div id="dashboardSection">
-
-            <div class="card">
-                <div class="stats-grid">
-
+                <div class="stats-grid" style="margin-bottom: 32px;">
                     <div class="stat-card">
-                        <span>Total</span>
+                        <span>Total Tokens</span>
                         <h3 id="total">0</h3>
                     </div>
-
                     <div class="stat-card">
-                        <span>Waiting</span>
+                        <span>In Queue</span>
                         <h3 id="waiting">0</h3>
                     </div>
-
                     <div class="stat-card">
-                        <span>Serving</span>
+                        <span>Currently Serving</span>
                         <h3 id="serving">0</h3>
                     </div>
-
                     <div class="stat-card">
                         <span>Completed</span>
                         <h3 id="completed">0</h3>
                     </div>
+                </div>
 
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Queue Controls</h2>
+                    </div>
+
+                    <div class="controls-grid">
+                        <button class="control-btn primary-gradient" onclick="generateToken()">
+                            <span class="icon">🎟️</span>
+                            <div class="btn-text">
+                                <strong>Generate Token</strong>
+                                <span>Add to Queue</span>
+                            </div>
+                        </button>
+
+                        <button class="control-btn success-gradient" onclick="serveNext()">
+                            <span class="icon">🧑‍⚕️</span>
+                            <div class="btn-text">
+                                <strong>Serve Next</strong>
+                                <span>Call from Queue</span>
+                            </div>
+                        </button>
+
+                        <button class="control-btn neutral-style" onclick="resetQueue()">
+                            <span class="icon">🔄</span>
+                            <div class="btn-text">
+                                <strong>Reset System</strong>
+                                <span>Clear all data</span>
+                            </div>
+                        </button>
+                    </div>
+
+                    <!-- Complete Token Section using Login Page Form Styles -->
+                    <div class="complete-wrapper">
+                        <div class="floating-input-group">
+                            <input type="text" id="completeToken" required placeholder=" ">
+                            <label>Enter Token to Complete (e.g. T1)</label>
+                        </div>
+                        <button class="control-btn execute-btn" onclick="completeToken()">
+                            <strong>Mark Complete</strong>
+                        </button>
+                    </div>
+
+                    <div class="serving-section">
+                        <div class="serving-label">Currently Serving</div>
+                        <div class="serving-token" id="currentlyServing">--</div>
+                    </div>
+                </div>
+
+            </div> <!-- Closes dashboardSection -->
+
+            <!-- TOKENS -->
+            <div id="tokensSection" style="display:none;">
+                <div class="card">
+                    <div class="controls-header">
+                        <h2>Token Registry</h2>
+                        <div class="filter-bar">
+                            <div class="filter-search-wrap">
+                                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                                    <circle cx="11" cy="11" r="8" />
+                                    <path d="M21 21l-4.35-4.35" />
+                                </svg>
+                                <input type="text" id="searchInput" placeholder="Search tokens...">
+                            </div>
+                            <select id="statusFilter" class="filter-select">
+                                <option value="">All Statuses</option>
+                                <option value="WAITING">Waiting</option>
+                                <option value="SERVING">Serving</option>
+                                <option value="COMPLETED">Completed</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <div id="history"></div>
+                    </div>
                 </div>
             </div>
 
-            <div class="card">
-                <div class="actions">
-                    <button class="generate" onclick="generateToken()">Generate Token</button>
-                    <button class="serve" onclick="serveNext()">Serve Next</button>
-                    <button class="reset" onclick="resetQueue()">Reset</button>
+            <!-- COUNTERS (Service Desks) -->
+            <div id="countersSection" style="display:none;">
+                <div class="card">
+                    <div class="controls-header">
+                        <h2>Manage Service Desks</h2>
+                        <div style="display:flex; gap:10px;">
+                            <button class="btn-primary" style="padding: 10px 20px;" onclick="addNewDesk()">+ Add New
+                                Counter</button>
+                            <button onclick="resetCounters()"
+                                style="padding: 10px 20px; background:#fff; color:#ef4444; border: 2px solid #fee2e2; border-radius:10px; font-size:14px; font-weight:600; font-family:'Inter',sans-serif; cursor:pointer; transition: all 0.2s;"
+                                onmouseover="this.style.background='#fef2f2'"
+                                onmouseout="this.style.background='#fff'">↺ Reset Counters</button>
+                        </div>
+                    </div>
 
-                    <input type="text" id="completeToken" placeholder="Enter Token">
-                    <button class="complete" onclick="completeToken()">Complete</button>
+                    <div class="staff-grid" id="staffGrid">
+                        <div class="staff-card">
+                            <div class="staff-avatar">C1</div>
+                            <div class="staff-info">
+                                <h4>Counter 1</h4>
+                                <span>Serving Token <strong style="color:var(--primary)">T-14</strong></span>
+                            </div>
+                            <span class="status-badge status-SERVING" style="margin-left: auto;">Online</span>
+                        </div>
+
+                        <div class="staff-card">
+                            <div class="staff-avatar" style="background: #10b981;">C2</div>
+                            <div class="staff-info">
+                                <h4>Counter 2</h4>
+                                <span>Waiting for patient</span>
+                            </div>
+                            <span class="status-badge status-COMPLETED" style="margin-left: auto;">Idle</span>
+                        </div>
+
+                        <div class="staff-card">
+                            <div class="staff-avatar" style="background: #f59e0b;">C3</div>
+                            <div class="staff-info">
+                                <h4>Counter 3</h4>
+                                <span>Closed for break</span>
+                            </div>
+                            <span class="status-badge status-WAITING" style="margin-left: auto;">Offline</span>
+                        </div>
+                    </div>
                 </div>
-
-                <div class="serving-label">CURRENTLY SERVING</div>
-                <div class="serving-token" id="currentlyServing">--</div>
-            </div>
-
-        </div>
-
-        <!-- TOKENS -->
-        <div id="tokensSection" style="display:none;">
-            <div class="card">
-                <h2>Token History</h2>
-
-                <div class="actions">
-                    <input type="text" id="searchInput" placeholder="Search Token">
-                    <select id="statusFilter">
-                        <option value="">All Status</option>
-                        <option value="WAITING">WAITING</option>
-                        <option value="SERVING">SERVING</option>
-                        <option value="COMPLETED">COMPLETED</option>
-                    </select>
-                </div>
-
-                <div id="history"></div>
             </div>
         </div>
-
-        <!-- REPORTS -->
-        <div id="reportsSection" style="display:none;">
-            <div class="card">
-                <h2>Reports</h2>
-                <canvas id="pieChart"></canvas>
-                <canvas id="barChart"></canvas>
-            </div>
-        </div>
+    </div>
+    </div>
 
     </div>
 
-</div>
+    </div>
 
-<script>
+    <script>
 
-let allTokens=[];
-let pieChart,barChart;
+        let allTokens = [];
+        let pieChart, barChart;
 
-function apiFetch(url){
-    return fetch(url,{credentials:'include'});
-}
-
-function showSection(section,el){
-    document.getElementById("dashboardSection").style.display="none";
-    document.getElementById("tokensSection").style.display="none";
-    document.getElementById("reportsSection").style.display="none";
-
-    document.getElementById(section+"Section").style.display="block";
-
-    document.querySelectorAll(".menu-item").forEach(i=>i.classList.remove("active"));
-    el.classList.add("active");
-
-    if(section==="tokens") loadHistory();
-    if(section==="reports") loadCharts();
-}
-
-async function generateToken(){await apiFetch('/queue/generate');refresh();}
-async function serveNext(){await apiFetch('/queue/serve');refresh();}
-async function completeToken(){
-    let token=document.getElementById("completeToken").value;
-    if(!token) return alert("Enter token");
-    await apiFetch('/queue/complete/'+token);
-    document.getElementById("completeToken").value="";
-    refresh();
-}
-async function resetQueue(){await apiFetch('/queue/reset');refresh();}
-async function logout(){await fetch('/logout',{credentials:'include'});window.location="/login";}
-
-async function loadSummary(){
-    const res=await apiFetch('/queue/summary');
-    const data=await res.json();
-    total.innerText=data.total;
-    waiting.innerText=data.waiting;
-    serving.innerText=data.serving;
-    completed.innerText=data.completed;
-}
-
-async function loadServing(){
-    const res = await apiFetch('/queue/serving');
-    const data = await res.json();
-
-    const tokenElement = document.getElementById("currentlyServing");
-
-    if(data && data.length > 0){
-        tokenElement.innerText = data.map(t => t.tokenNumber).join(" ");
-    } else {
-        tokenElement.innerText = "--";
-    }
-}
-
-async function loadHistory(){
-    const res=await apiFetch('/queue/all');
-    allTokens=await res.json();
-    renderTable();
-}
-
-function renderTable(){
-    let search=document.getElementById("searchInput").value.toUpperCase();
-    let status=document.getElementById("statusFilter").value;
-    let historyDiv=document.getElementById("history");
-
-    let filtered=allTokens.filter(t=>{
-        return t.tokenNumber.toUpperCase().includes(search) &&
-               (status===""||t.status===status);
-    });
-
-    let table="<table><tr><th>Token</th><th>Status</th></tr>";
-    filtered.forEach(t=>{
-        table+=`<tr><td>${t.tokenNumber}</td><td>${t.status}</td></tr>`;
-    });
-    table+="</table>";
-    historyDiv.innerHTML=table;
-}
-
-document.getElementById("searchInput").addEventListener("keyup",renderTable);
-document.getElementById("statusFilter").addEventListener("change",renderTable);
-
-async function loadCharts(){
-    const res=await apiFetch('/queue/summary');
-    const data=await res.json();
-
-    if(pieChart) pieChart.destroy();
-    if(barChart) barChart.destroy();
-
-    pieChart=new Chart(document.getElementById("pieChart"),{
-        type:'pie',
-        data:{
-            labels:['Waiting','Serving','Completed'],
-            datasets:[{
-                data:[data.waiting,data.serving,data.completed],
-                backgroundColor:['#fbbf24','#007bff','#28a745']
-            }]
+        async function apiFetch(url) {
+            let res = await fetch(url, { credentials: 'include' });
+            if (res.status === 401 || res.status === 403) {
+                window.location.href = "/login";
+                return null;
+            }
+            if (!res.ok) {
+                return null;
+            }
+            return res;
         }
-    });
 
-    barChart=new Chart(document.getElementById("barChart"),{
-        type:'bar',
-        data:{
-            labels:['Waiting','Serving','Completed'],
-            datasets:[{
-                data:[data.waiting,data.serving,data.completed],
-                backgroundColor:'#667eea'
-            }]
+        // Persist counter count across browser sessions
+        let deskCount = parseInt(localStorage.getItem('deskCount') || '3');
+
+        function addCounterCard(num) {
+            const colors = ['var(--stat-1)', 'var(--stat-2)', 'var(--stat-3)', 'var(--stat-4)'];
+            const color = colors[(num - 1) % colors.length];
+            let grid = document.getElementById("staffGrid");
+            let newDesk = document.createElement("div");
+            newDesk.className = "staff-card";
+            newDesk.innerHTML = `
+                <div class="staff-avatar" style="background: ${color};">C${num}</div>
+                <div class="staff-info">
+                    <h4>Counter ${num}</h4>
+                    <span>Waiting for patient</span>
+                </div>
+                <span class="status-badge status-WAITING" style="margin-left: auto;">Idle</span>
+            `;
+            grid.appendChild(newDesk);
         }
-    });
-}
 
-function refresh(){
-    loadSummary();
-    loadServing();
-}
+        function addNewDesk() {
+            deskCount++;
+            localStorage.setItem('deskCount', deskCount);
+            addCounterCard(deskCount);
+        }
 
-setInterval(refresh,3000);
-refresh();
+        async function resetCounters() {
+            const summaryRes = await apiFetch('/queue/summary');
+            if (!summaryRes) return;
+            const data = await summaryRes.json();
+            const serving = Number(data.serving);
 
-</script>
+            if (serving > 3) {
+                alert(`⚠️ Cannot reset counters!\n\n${serving} tokens are currently being served. Resetting to 3 counters would leave ${serving - 3} tokens with no counter.\n\nPlease complete or reset the queue first.`);
+                return;
+            }
+
+            // serving <= 3: reset silently, no confirmation needed
+            let grid = document.getElementById("staffGrid");
+            let cards = grid.getElementsByClassName("staff-card");
+            while (cards.length > 3) {
+                grid.removeChild(cards[3]);
+            }
+            deskCount = 3;
+            localStorage.removeItem('deskCount');
+            refresh();
+        }
+
+        // Restore extra counters added in previous sessions
+        (function restoreCounters() {
+            for (let i = 4; i <= deskCount; i++) {
+                addCounterCard(i);
+            }
+        })();
+
+        function showSection(section, el) {
+            document.getElementById("dashboardSection").style.display = "none";
+            document.getElementById("tokensSection").style.display = "none";
+            document.getElementById("countersSection").style.display = "none";
+
+            document.getElementById(section + "Section").style.display = "block";
+
+            document.querySelectorAll(".menu-item").forEach(i => i.classList.remove("active"));
+            el.classList.add("active");
+
+            if (section === "tokens") loadHistory();
+        }
+
+        async function generateToken() { await apiFetch('/queue/generate'); refresh(); }
+        async function serveNext() {
+            const summaryRes = await apiFetch('/queue/summary');
+            if (!summaryRes) return;
+            const data = await summaryRes.json();
+
+            if (data.waiting === 0 || data.waiting === '0') {
+                alert("No tokens are waiting in the queue.");
+                return;
+            }
+
+            if (data.serving >= deskCount) {
+                alert("All counters are busy! Please complete a token first or add a new counter.");
+                return;
+            }
+
+            await apiFetch('/queue/serve');
+            refresh();
+        }
+        async function completeToken() {
+            let token = document.getElementById("completeToken").value;
+            if (!token) return alert("Enter token");
+            await apiFetch('/queue/complete/' + token);
+            document.getElementById("completeToken").value = "";
+            refresh();
+        }
+        async function resetQueue() { await apiFetch('/queue/reset'); refresh(); }
+        async function logout() { await fetch('/logout', { credentials: 'include' }); window.location = "/login"; }
+
+        async function loadSummary() {
+            const res = await apiFetch('/queue/summary');
+            if (!res) return;
+            const data = await res.json();
+            document.getElementById("total").innerText = data.total;
+            document.getElementById("waiting").innerText = data.waiting;
+            document.getElementById("serving").innerText = data.serving;
+            document.getElementById("completed").innerText = data.completed;
+        }
+
+        async function loadServing() {
+            const res = await apiFetch('/queue/serving');
+            if (!res) return;
+            const data = await res.json();
+
+            // 1. Update the Main Dashboard "Currently Serving" display
+            const tokenElement = document.getElementById("currentlyServing");
+            if (data && data.length > 0) {
+                tokenElement.innerText = data.map(t => t.tokenNumber).join(" ");
+            } else {
+                tokenElement.innerText = "--";
+            }
+
+            // 2. Distribute Serving Tokens to all active Service Desks
+            let grid = document.getElementById("staffGrid");
+            if (grid) {
+                let desks = grid.getElementsByClassName("staff-card");
+
+                // Keep track of how many tokens we've assigned
+                let tokenIndex = 0;
+
+                for (let i = 0; i < desks.length; i++) {
+                    let deskInfo = desks[i].querySelector('.staff-info span');
+                    let deskStatusBadge = desks[i].querySelector('.status-badge');
+
+                    if (data && tokenIndex < data.length) {
+                        // Assign Token to this Desk
+                        let servingToken = data[tokenIndex].tokenNumber;
+                        deskInfo.innerHTML = `Serving Token <strong style="color:var(--primary)">${servingToken}</strong>`;
+                        deskStatusBadge.className = "status-badge status-SERVING";
+                        deskStatusBadge.innerText = "Busy";
+                        tokenIndex++;
+                    } else {
+                        // Desk is Idle
+                        deskInfo.innerText = "Waiting for patient";
+                        deskStatusBadge.className = "status-badge status-COMPLETED";
+                        deskStatusBadge.innerText = "Idle";
+                    }
+                }
+            }
+        }
+
+        async function loadHistory() {
+            const res = await apiFetch('/queue/all');
+            if (!res) return;
+            allTokens = await res.json();
+            renderTable();
+        }
+
+        function formatTime(timeData) {
+            if (!timeData) return "--";
+            try {
+                let date;
+                if (Array.isArray(timeData)) {
+                    date = new Date(timeData[0], timeData[1] - 1, timeData[2], timeData[3], timeData[4], timeData[5] || 0);
+                } else {
+                    date = new Date(timeData);
+                }
+                return date.toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true });
+            } catch (e) { return "--"; }
+        }
+
+        function renderTable() {
+            let search = document.getElementById("searchInput").value.toUpperCase();
+            let status = document.getElementById("statusFilter").value;
+            let historyDiv = document.getElementById("history");
+
+            let filtered = allTokens.filter(t => {
+                return t.tokenNumber.toUpperCase().includes(search) &&
+                    (status === "" || t.status === status);
+            });
+
+            if (filtered.length === 0) {
+                historyDiv.innerHTML = `<div style='text-align:center; padding: 40px; color:var(--text-muted); font-size:16px;'>No tokens match your search criteria.</div>`;
+                return;
+            }
+
+            let html = `<div class="token-cards-grid">`;
+            filtered.forEach(t => {
+                let created = formatTime(t.createdTime);
+                let served = t.status === 'WAITING' ? '--' : formatTime(t.servedTime);
+
+                html += `
+                <div class="token-history-card">
+                    <div class="thc-header">
+                        <h3>${t.tokenNumber}</h3>
+                        <span class="status-badge status-${t.status}">${t.status}</span>
+                    </div>
+                    <div class="thc-body">
+                        <div class="time-block">
+                            <span class="time-label">Generated</span>
+                            <span class="time-value">${created}</span>
+                        </div>
+                        <div class="time-block">
+                            <span class="time-label">Served</span>
+                            <span class="time-value">${served}</span>
+                        </div>
+                    </div>
+                </div>
+                `;
+            });
+            html += `</div>`;
+            historyDiv.innerHTML = html;
+        }
+
+        document.getElementById("searchInput").addEventListener("keyup", renderTable);
+        document.getElementById("statusFilter").addEventListener("change", renderTable);
+
+        function refresh() {
+            loadSummary();
+            loadServing();
+        }
+
+        setInterval(refresh, 3000);
+        refresh();
+
+    </script>
 
 </body>
+
 </html>

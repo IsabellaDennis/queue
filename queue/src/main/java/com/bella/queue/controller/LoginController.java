@@ -13,9 +13,9 @@ public class LoginController {
     }
 
     @PostMapping("/login")
-    public String login(@RequestParam String username,
-                        @RequestParam String password,
-                        HttpSession session) {
+    public String login(@RequestParam("username") String username,
+            @RequestParam("password") String password,
+            HttpSession session) {
 
         if (username.equals("admin") && password.equals("1234")) {
             session.setAttribute("user", username);

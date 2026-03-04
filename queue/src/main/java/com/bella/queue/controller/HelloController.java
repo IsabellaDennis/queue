@@ -40,8 +40,8 @@ public class HelloController {
 
     // Complete token
     @GetMapping("/complete/{tokenNumber}")
-    public String completeToken(@PathVariable String tokenNumber,
-                                HttpSession session) {
+    public String completeToken(@PathVariable("tokenNumber") String tokenNumber,
+            HttpSession session) {
         checkLogin(session);
         queueService.completeToken(tokenNumber);
         return "Token " + tokenNumber + " completed successfully.";
