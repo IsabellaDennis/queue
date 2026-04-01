@@ -68,13 +68,6 @@ public class HelloController {
         return queueService.getCurrentlyServing();
     }
 
-    // Average waiting time
-    @GetMapping("/average-waiting-time")
-    public Double getAverageWaitingTime(HttpSession session) {
-        checkLogin(session);
-        return queueService.getAverageWaitingTimeSeconds();
-    }
-
     @GetMapping("/reset")
     public String resetQueue() {
         queueService.resetQueue();

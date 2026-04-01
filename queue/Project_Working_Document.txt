@@ -1,0 +1,234 @@
+================================================================================
+           Digital Queue Management System - Project Working Document
+================================================================================
+
+This document explains how every part of the Digital Queue Management System works,
+from the moment you start the server to the moment tokens are processed.
+It is intended for students, reviewers, and contributors to easily understand
+the full flow of the project without needing to read every line of code.
+
+
+================================================================================
+1. WHAT IS THE DIGITAL QUEUE MANAGEMENT SYSTEM?
+================================================================================
+
+The Digital Queue Management System is a web-based application built with Java 
+and Spring Boot. It allows businesses, clinics, or service centers to efficiently 
+manage customer queues by issuing tokens, calling them to service desks, and 
+tracking their status through a professional Admin Dashboard.
+
+Key features:
+  - Generate Token: Issues a new token (e.g., T1, T2) and adds it to the queue.
+  - Serve Next Token: Automatically calls the next waiting token in line.
+  - Complete Token: Marks a token as finished and automatically calls the next.
+  - Live Dashboard Metrics: Displays Total, In Queue, Currently Serving, and Completed.
+  - Token History: A registry viewing all tokens and filtering by their status.
+  - Service Desks (Counters): UI to add and manage dynamic counters/desks.
+  - Session-Based Authentication: Secures the admin endpoints from unauthorized access.
+  - Persistent Storage: Uses a relational database via JdbcTemplate to store tokens reliably.
+
+
+================================================================================
+2. TECHNOLOGY STACK
+================================================================================
+
+  Component        | Technology           | Purpose
+  -----------------+----------------------+-----------------------------------------
+  Language         | Java 21              | Core backend logic
+  Framework        | Spring Boot          | Auto-configures web server, DI, REST APIs
+  Database Access  | Spring JdbcTemplate  | Executes raw SQL for fast, direct DB access
+  Security         | HTTP Sessions        | Manages admin authentication state
+  Template/Static  | HTML, CSS, JS        | Renders the frontend UI directly from static
+  Client Logic     | Vanilla JavaScript   | Handles API calls, DOM updates, and state
+
+
+================================================================================
+3. PROJECT STRUCTURE
+================================================================================
+
+  queue/
+  ├── pom.xml                               -- Maven config: dependencies & build
+  └── src/main/
+      ├── java/com/bella/queue/
+      │   ├── QueueApplication.java         -- Entry point (main method)
+      │   ├── controller/
+      │   │   ├── HelloController.java      -- Handles Queue REST APIs (/queue/*)
+      │   │   ├── LoginController.java      -- Handles Authentication (/login)
+      │   │   └── WebConfig.java            -- Web MVC Configuration / Interceptors
+      │   ├── service/
+      │   │   └── QueueService.java         -- Business logic for Token issuing/serving
+      │   └── model/
+      │       ├── Token.java                -- Data object representing a Token
+      │       └── TokenStatus.java          -- Enum (WAITING, SERVING, COMPLETED)
+      └── resources/
+          ├── application.properties        -- Database & server configuration
+          ├── schema.sql                    -- Database table initializations
+          └── static/
+              ├── html/
+              │   ├── index.html            -- Main Admin Dashboard UI
+              │   └── login.html            -- Login Page
+              ├── css/
+              │   └── style.css             -- Application styling
+              └── js/
+                  └── script.js             -- Frontend logic and API integration
+
+
+================================================================================
+4. ARCHITECTURE EXPLAINED
+================================================================================
+
+The application follows a RESTful Client-Server architecture:
+
+  ┌─────────────┐       ┌──────────────┐       ┌───────────────┐       ┌──────────────┐
+  │   CLIENT    │ <---> │  CONTROLLER  │ <---> │    SERVICE    │ <---> │   DATABASE   │
+  │ (HTML & JS) │       │(REST Endpoints│       │(QueueService) │       │(JdbcTemplate)│
+  └─────────────┘       └──────────────┘       └───────────────┘       └──────────────┘
+   script.js calls        HelloController         Executes busi-          TOKEN table
+   APIs via fetch()       validates session       ness rules,             stores states.
+   and updates DOM.       and routes reqs.        runs SQL queries.
+
+  MODEL = The data representation (Token class) passed between layers.
+
+  VIEW  = Static HTML/JS. Employs Single Page Application (SPA) mechanics using JS
+          to fetch JSON from the backend without reloading the entire page.
+
+  CONTROLLER = Defines API endpoints (e.g., @GetMapping("/queue/generate")).
+               Ensures only logged-in sessions can access these routes.
+
+  SERVICE = Contains the core business logic (generating logic, SQL updates). 
+            Throws exceptions if rules are violated (e.g., serving when queue is empty).
+
+
+================================================================================
+5. COMPLETE APPLICATION FLOW (Step by Step)
+================================================================================
+
+--- PHASE 1: STARTUP ---
+
+  1. User runs the Spring Boot application.
+  2. Spring Boot initializes the embedded Tomcat web server.
+  3. Database is initialized (schema.sql is executed if configured).
+  4. Spring instantiates singleton beans: QueueService, HelloController, etc.
+
+--- PHASE 2: AUTHENTICATION ---
+
+  1. User navigates to the application URL and is presented with login.html.
+  2. User enters credentials, which hit LoginController.
+  3. If valid, an HttpSession is created storing the "user" attribute.
+  4. User is redirected to index.html (Digital Queue Dashboard).
+
+--- PHASE 3: ADMIN DASHBOARD INTERACTION ---
+
+  1. On loading index.html, script.js automatically fetches initial data:
+     a. Fetch /queue/summary to populate the Total, Waiting, Serving stats.
+     b. Fetch /queue/all to render the Token History table.
+     c. Fetch /queue/serving to display the currently serving tokens.
+  2. Every API route in HelloController calls `checkLogin(session)` to ensure
+     the request is coming from an authenticated administrator.
+
+--- PHASE 4: MANAGING THE QUEUE ---
+
+  Scenario A: Generate Token
+  1. Admin clicks "Generate Token".
+  2. JS calls GET /queue/generate.
+  3. QueueService generates a new token number (e.g., "T1") based on a counter.
+  4. Inserts into the TOKEN table with status WAITING and current timestamp.
+  5. UI dynamically updates the metrics and tables.
+
+  Scenario B: Serve Next
+  1. Admin clicks "Serve Next".
+  2. JS calls GET /queue/serve.
+  3. QueueService queries the database for the oldest WAITING token (LIMIT 1).
+  4. Updates that token's status to SERVING and records the served_time.
+  5. UI updates the "Currently Serving" display.
+
+  Scenario C: Complete Token
+  1. Admin inputs a token number and clicks "Mark Complete".
+  2. JS calls GET /queue/complete/{tokenNumber}.
+  3. QueueService updates the token status to COMPLETED.
+  4. IMPORTANT: The service automatically attempts to call serveNext() immediately
+     after completing a token to keep the queue flowing efficiently.
+
+
+================================================================================
+6. KEY ALGORITHMS & LOGIC
+================================================================================
+
+--- SERVING THE NEXT CUSTOMER ---
+
+  To ensure fairness, the system always picks the oldest waiting token.
+  
+  Code Logic:
+    SELECT * FROM TOKEN WHERE STATUS='WAITING' ORDER BY ID LIMIT 1
+    
+  If no tokens are waiting, the application safely handles it by throwing a 
+  controlled RuntimeException("No waiting tokens.") which the frontend catches.
+
+--- AUTOMATIC CHAINING OF COMPLETION ---
+
+  When a Desk finishes with a token, they want the next one immediately.
+  
+  Code Logic:
+    public void completeToken(String tokenNumber) {
+        jdbcTemplate.update("UPDATE TOKEN SET STATUS='COMPLETED' WHERE TOKEN_NUMBER=?", tokenNumber);
+        try {
+            serveNext(); // Automatically pop the next person in line
+        } catch (RuntimeException e) {
+            // Extinguishes gracefully if line is empty
+        }
+    }
+
+--- AVERAGE WAITING TIME CALCULATION ---
+
+  Calculates how long on average people wait before being served.
+  
+  Code Logic:
+    SELECT AVG(DATEDIFF('SECOND', CREATED_TIME, SERVED_TIME))
+    FROM TOKEN WHERE SERVED_TIME IS NOT NULL
+
+
+================================================================================
+7. FRONTEND JAVASCRIPT LOGIC
+================================================================================
+
+--- DYNAMIC UI UPDATING (script.js) ---
+
+  - Tab Navigation: The UI uses hidden div sections (dashboardSection, tokensSection, 
+    countersSection). When a sidebar item is clicked, JS changes the `display`
+    properties to switch views without reloading the page.
+    
+  - Counters Logic: "Service Desks" are handled dynamically on the frontend.
+    Administrators can add a new counter or reset counters. LocalStorage is used 
+    to persist the custom number of added counters so they don't disappear on refresh.
+
+--- ASYNCHRONOUS FETCHING ---
+
+  Functions like `generateToken()` use the standard `fetch()` API:
+    fetch('/queue/generate')
+      .then(response => response.json())
+      .then(data => refreshDashboard())
+      
+  This pattern ensures the page never flashes or reloads, maintaining a smooth,
+  desktop-like application experience.
+
+
+================================================================================
+8. HOW TO RUN THE PROJECT
+================================================================================
+
+  Prerequisites:
+    - Java JDK 21 installed
+    - Apache Maven installed
+
+  Steps:
+    1. Open a terminal in the project root directory
+    2. Run: mvn spring-boot:run
+    3. Wait for "Started QueueApplication" message
+    4. Open browser: http://localhost:8080/
+    5. Log in.
+    6. Begin managing your queue!
+
+
+================================================================================
+                        END OF DOCUMENT
+================================================================================

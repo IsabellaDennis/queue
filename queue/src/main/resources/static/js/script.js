@@ -1,6 +1,108 @@
 let allTokens = [];
 let pieChart, barChart;
 
+// Inject serving card styles directly so they always apply regardless of CSS caching
+(function injectStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes tokenPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.75; }
+        }
+        @keyframes liveDot {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.4); opacity: 0.6; }
+        }
+        #currentlyServing {
+            display: flex !important;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            padding: 4px 0;
+        }
+        .dash-serving-card {
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid #fee2e2;
+            border-top: 5px solid #dc2626;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            padding: 16px 20px 24px;
+            min-width: 170px;
+            text-align: center;
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+        .dash-serving-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(220, 38, 38, 0.12);
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .live-status {
+            font-size: 9px;
+            font-weight: 800;
+            color: #22c55e;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            letter-spacing: 0.5px;
+        }
+        .live-dot {
+            width: 6px;
+            height: 6px;
+            background: #22c55e;
+            border-radius: 50%;
+            animation: liveDot 1.2s ease-in-out infinite;
+        }
+        .dash-serving-card .desk-badge {
+            color: #475569;
+            font-size: 10px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .dash-serving-card .now-serving-label {
+            display: block;
+            color: #94a3b8;
+            font-size: 9px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 4px;
+        }
+        .dash-serving-card .token-number {
+            display: block;
+            font-family: 'Outfit', sans-serif;
+            font-size: 72px;
+            font-weight: 800;
+            color: #dc2626;
+            letter-spacing: -2px;
+            line-height: 1;
+            animation: tokenPulse 2s ease-in-out infinite;
+        }
+    `;
+    document.head.appendChild(style);
+})();
+
+
+
+
+
+
+
+
+
+
+
 async function apiFetch(url) {
     let res = await fetch(url, { credentials: 'include' });
     if (res.status === 401 || res.status === 403) {
@@ -128,36 +230,80 @@ async function loadServing() {
     if (!res) return;
     const data = await res.json();
 
-    // 1. Update the Main Dashboard "Currently Serving" display
     const tokenElement = document.getElementById("currentlyServing");
-    if (data && data.length > 0) {
-        tokenElement.innerText = data.map(t => t.tokenNumber).join(" ");
-    } else {
-        tokenElement.innerText = "--";
+    let grid = document.getElementById("staffGrid");
+    let currentlyServingCards = [];
+
+    // Load persistent token-to-desk assignments
+    let tokenDesks = JSON.parse(localStorage.getItem('tokenDesks') || '{}');
+    let servingNumbers = data ? data.map(t => t.tokenNumber) : [];
+
+    // 1. Clean up completed tokens from assignments
+    for (let t in tokenDesks) {
+        if (!servingNumbers.includes(t)) {
+            delete tokenDesks[t];
+        }
     }
 
-    // 2. Distribute Serving Tokens to all active Service Desks
-    let grid = document.getElementById("staffGrid");
+    // 2. Assign desks to newly serving tokens
+    let usedDesks = Object.values(tokenDesks);
+    for (let t of servingNumbers) {
+        if (!tokenDesks[t]) {
+            let assigned = 1;
+            while (usedDesks.includes(assigned) && assigned <= deskCount) {
+                assigned++;
+            }
+            tokenDesks[t] = assigned;
+            usedDesks.push(assigned);
+        }
+    }
+    localStorage.setItem('tokenDesks', JSON.stringify(tokenDesks));
+
     if (grid) {
         let desks = grid.getElementsByClassName("staff-card");
-        let tokenIndex = 0;
 
         for (let i = 0; i < desks.length; i++) {
+            let deskNum = i + 1;
             let deskInfo = desks[i].querySelector('.staff-info span');
             let deskStatusBadge = desks[i].querySelector('.status-badge');
+            let deskName = desks[i].querySelector('h4').innerText;
 
-            if (data && tokenIndex < data.length) {
-                let servingToken = data[tokenIndex].tokenNumber;
+            let tokenObj = data ? data.find(t => tokenDesks[t.tokenNumber] === deskNum) : null;
+
+            if (tokenObj) {
+                let servingToken = tokenObj.tokenNumber;
                 deskInfo.innerHTML = `Serving Token <strong style="color:var(--primary)">${servingToken}</strong>`;
                 deskStatusBadge.className = "status-badge status-SERVING";
                 deskStatusBadge.innerText = "Busy";
-                tokenIndex++;
+                
+                currentlyServingCards.push(`
+                    <div class="dash-serving-card">
+                        <div class="card-header">
+                            <span class="desk-badge">${deskName}</span>
+                            <span class="live-status"><span class="live-dot"></span>LIVE</span>
+                        </div>
+                        <span class="now-serving-label">Now Serving</span>
+                        <span class="token-number">${servingToken}</span>
+                    </div>
+                `);
+
             } else {
                 deskInfo.innerText = "Waiting for patient";
                 deskStatusBadge.className = "status-badge status-COMPLETED";
                 deskStatusBadge.innerText = "Idle";
             }
         }
+    }
+
+    if (currentlyServingCards.length > 0) {
+        tokenElement.style.display = "flex";
+        tokenElement.style.flexWrap = "wrap";
+        tokenElement.style.justifyContent = "center";
+        tokenElement.style.gap = "20px";
+        tokenElement.innerHTML = currentlyServingCards.join("");
+    } else {
+        tokenElement.style.display = "block";
+        tokenElement.innerHTML = "--";
     }
 }
 

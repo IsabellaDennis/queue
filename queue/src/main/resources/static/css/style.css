@@ -1,8 +1,3 @@
-/* ============================================================
-   DIGITAL QUEUE MANAGEMENT SYSTEM — SHARED STYLESHEET
-   Contains styles for: Dashboard (index.html) + Login (login.html)
-   ============================================================ */
-
 /* ==================== LOGIN PAGE STYLES ==================== */
 
 .login-body {
@@ -112,7 +107,6 @@
 
 /* ==================== DASHBOARD PAGE STYLES ==================== */
 
-/* Enterprise / Professional Light Mode CSS */
 :root {
     --primary: #667eea;
     --primary-dark: #5a67d8;
@@ -873,3 +867,5 @@ input:checked+.slider:before {
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
 }
+
+/* Counter card styles are injected by script.js */
