@@ -9,10 +9,6 @@ let pieChart, barChart;
             0%, 100% { opacity: 1; }
             50% { opacity: 0.75; }
         }
-        @keyframes liveDot {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.4); opacity: 0.6; }
-        }
         #currentlyServing {
             display: flex !important;
             flex-wrap: wrap;
@@ -23,71 +19,67 @@ let pieChart, barChart;
         .dash-serving-card {
             background: #ffffff;
             border-radius: 12px;
-            border: 1px solid #fee2e2;
-            border-top: 5px solid #dc2626;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-            padding: 16px 20px 24px;
-            min-width: 170px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+            padding: 16px 20px;
+            min-width: 140px;
             text-align: center;
             position: relative;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            overflow: hidden;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
         }
         .dash-serving-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 30px rgba(220, 38, 38, 0.12);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            border-color: #cbd5e1;
         }
         .card-header {
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
+            width: 100%;
+            margin-bottom: 4px;
+            padding-bottom: 12px;
             border-bottom: 1px solid #f1f5f9;
         }
-        .live-status {
-            font-size: 9px;
-            font-weight: 800;
-            color: #22c55e;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            letter-spacing: 0.5px;
-        }
-        .live-dot {
-            width: 6px;
-            height: 6px;
-            background: #22c55e;
-            border-radius: 50%;
-            animation: liveDot 1.2s ease-in-out infinite;
-        }
         .dash-serving-card .desk-badge {
-            color: #475569;
+            color: #4338ca;
+            background: #e0e7ff;
+            border: 1px solid #c7d2fe;
+            padding: 5px 14px;
+            border-radius: 8px;
             font-size: 10px;
             font-family: 'Inter', sans-serif;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
+            box-shadow: 0 2px 8px rgba(67, 56, 202, 0.1);
         }
         .dash-serving-card .now-serving-label {
             display: block;
             color: #94a3b8;
             font-size: 9px;
             font-family: 'Inter', sans-serif;
-            font-weight: 600;
+            font-weight: 500;
             text-transform: uppercase;
             letter-spacing: 2px;
-            margin-bottom: 4px;
         }
         .dash-serving-card .token-number {
             display: block;
             font-family: 'Outfit', sans-serif;
-            font-size: 72px;
-            font-weight: 800;
-            color: #dc2626;
-            letter-spacing: -2px;
+            font-size: 52px;
+            font-weight: 900;
+            color: rgba(230, 0, 0, 0.7);
+            letter-spacing: -1.5px;
             line-height: 1;
-            animation: tokenPulse 2s ease-in-out infinite;
+            margin-top: 2px;
+            text-shadow: 
+                -1px -1px 2px rgba(255, 255, 255, 0.8),
+                 2px  2px 4px rgba(0, 0, 0, 0.15),
+                 0px  8px 16px rgba(0, 0, 0, 0.05);
         }
     `;
     document.head.appendChild(style);
@@ -280,7 +272,6 @@ async function loadServing() {
                     <div class="dash-serving-card">
                         <div class="card-header">
                             <span class="desk-badge">${deskName}</span>
-                            <span class="live-status"><span class="live-dot"></span>LIVE</span>
                         </div>
                         <span class="now-serving-label">Now Serving</span>
                         <span class="token-number">${servingToken}</span>
